@@ -1,0 +1,9 @@
+Django>=5.2
+graphene-django>=3.2
+django-filter>=24.2
+django-crontab>=0.7.1
+requests>=2.32.3
+gql[requests]>=3.5.0
+celery>=5.4.0
+django-celery-beat>=2.6.0
+redis>=5.0.7

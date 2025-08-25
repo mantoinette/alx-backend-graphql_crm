@@ -157,13 +157,39 @@ class CreateOrder(graphene.Mutation):
         except Exception as e:
             return CreateOrder(order=None, message=str(e), ok=False)
 
+class UpdateLowStockProducts(graphene.Mutation):
+    class Arguments:
+        increment_by = graphene.Int(default_value=10)
+
+    ok = graphene.Boolean()
+    message = graphene.String()
+    updated_products = graphene.List(lambda: ProductNode)
+
+    @classmethod
+    def mutate(cls, root, info, increment_by):
+        updated = []
+        with transaction.atomic():
+            qs = Product.objects.select_for_update().filter(stock__lt=10)
+            for p in qs:
+                p.stock = p.stock + increment_by
+                p.save(update_fields=["stock"])
+                updated.append(p)
+        return UpdateLowStockProducts(
+            ok=True,
+            message=f"Updated {len(updated)} products",
+            updated_products=updated,
+        )
 
 # Root Mutation
 class Mutation(graphene.ObjectType):
+    # keep your existing fields:
     create_customer = CreateCustomer.Field()
     create_product = CreateProduct.Field()
     create_order = CreateOrder.Field()
+    update_low_stock_products = UpdateLowStockProducts.Field()
 
+# alias for nicer GraphQL API name
+UpdateLowStockProductsField = UpdateLowStockProducts.Field
 
 # Schema
 schema = graphene.Schema(query=Query, mutation=Mutation)
