@@ -3,7 +3,8 @@
 Query the GraphQL endpoint for orders created in the last 7 days
 and log reminders to /tmp/order_reminders_log.txt
 """
-
+from gql import gql, Client
+from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import sys
