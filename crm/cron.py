@@ -1,5 +1,8 @@
 from datetime import datetime
 from pathlib import Path
+from gql import gql, Client
+from gql.transport.requests import RequestsHTTPTransport
+import datetime
 
 LOG_PATH = "/tmp/crm_heartbeat_log.txt"
 
