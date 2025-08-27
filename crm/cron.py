@@ -10,6 +10,10 @@ GRAPHQL_URL = os.environ.get("GRAPHQL_URL", "http://localhost:8000/graphql/")
 LOG_DIR = "/tmp"  # On Windows, this becomes C:\tmp
 LOG_FILE = os.path.join(LOG_DIR, "low_stock_updates_log.txt")
 
+
+
+
+
 def _append_log(line: str) -> None:
     try:
         os.makedirs(LOG_DIR, exist_ok=True)
