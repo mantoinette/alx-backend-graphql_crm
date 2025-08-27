@@ -8,7 +8,8 @@ import os
 GRAPHQL_URL = os.environ.get("GRAPHQL_URL", "http://localhost:8000/graphql/")
 
 LOG_DIR = "/tmp"  # On Windows, this becomes C:\tmp
-LOG_FILE = os.path.join(LOG_DIR, "low_stock_updates_log.txt")
+LOG_FILE = os.path.join(LOG_DIR, "/tmp/low_stock_updates_log.txt")
+
 
 
 
