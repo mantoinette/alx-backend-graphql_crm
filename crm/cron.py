@@ -1,53 +1,61 @@
-from datetime import datetime
-from pathlib import Path
+# crm/cron.py
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
-import datetime
+from datetime import datetime
+import os
 
-LOG_PATH = "/tmp/crm_heartbeat_log.txt"
+# Change this if your GraphQL URL differs
+GRAPHQL_URL = os.environ.get("GRAPHQL_URL", "http://localhost:8000/graphql/")
 
-def log_crm_heartbeat():
-    """
-    Logs a line like:
-    DD/MM/YYYY-HH:MM:SS CRM is alive
-    to /tmp/crm_heartbeat_log.txt (append mode).
-    Optionally pings the GraphQL hello field if 'requests' is available.
-    """
-    ts = datetime.now().strftime("%d/%m/%Y-%H:%M:%S")
-    line = f"{ts} CRM is alive"
+LOG_DIR = "/tmp"  # On Windows, this becomes C:\tmp
+LOG_FILE = os.path.join(LOG_DIR, "low_stock_updates_log.txt")
 
-    # Ensure parent dir exists (best-effort; /tmp usually exists)
+def _append_log(line: str) -> None:
     try:
-        Path(LOG_PATH).parent.mkdir(parents=True, exist_ok=True)
+        os.makedirs(LOG_DIR, exist_ok=True)
     except Exception:
         pass
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
 
-    # Append heartbeat
+def update_low_stock():
+    """
+    Calls the UpdateLowStockProducts GraphQL mutation and logs results with timestamps.
+    """
+    transport = RequestsHTTPTransport(
+        url=GRAPHQL_URL,
+        verify=True,
+        retries=3,
+    )
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+
+    # Optional: ping the hello field to confirm endpoint is responsive
     try:
-        with open(LOG_PATH, "a", encoding="utf-8") as f:
-            f.write(line + "\n")
-    except Exception:
-        # Don't crash the cron job if logging fails
-        return
+        ping = client.execute(gql("query { hello }"))
+        _append_log(f"{datetime.now().isoformat(timespec='seconds')} — hello ping: {ping.get('hello')}")
+    except Exception as e:
+        _append_log(f"{datetime.now().isoformat(timespec='seconds')} — hello ping failed: {e}")
 
-    # --- Optional: GraphQL hello check ---
+    mutation = gql("""
+        mutation UpdateLowStock {
+          updateLowStockProducts {
+            ok
+            message
+            updatedProducts { id name stock }
+          }
+        }
+    """)
+
+    ts = datetime.now().isoformat(timespec="seconds")
     try:
-        import requests  # optional dependency
-        resp = requests.post(
-            "http://localhost:8000/graphql",
-            json={"query": "query { hello }"},
-            timeout=3,
-        )
-        extra = ""
-        if resp.ok:
-            data = resp.json() if resp.headers.get("content-type", "").lower().startswith("application/json") else {}
-            hello_val = (data or {}).get("data", {}).get("hello")
-            extra = f" GraphQL hello: {hello_val}"
-        else:
-            extra = f" GraphQL check failed HTTP {resp.status_code}"
+        result = client.execute(mutation)
+        payload = result.get("updateLowStockProducts") or {}
+        ok = payload.get("ok")
+        msg = payload.get("message", "")
+        items = payload.get("updatedProducts") or []
 
-        with open(LOG_PATH, "a", encoding="utf-8") as f:
-            f.write(f"{ts}{extra}\n")
-    except Exception:
-        # Silently ignore optional GraphQL issues/missing requests
-        pass
+        _append_log(f"{ts} — ok={ok} message='{msg}'")
+        for p in items:
+            _append_log(f"{ts} — {p['name']}: stock={p['stock']}")
+    except Exception as e:
+        _append_log(f"{ts} — mutation failed: {e}")

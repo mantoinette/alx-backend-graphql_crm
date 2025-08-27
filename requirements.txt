@@ -1,1 +1,5 @@
 django-crontab
+gql[requests]
+django-crontab
+graphene
+graphene-django
