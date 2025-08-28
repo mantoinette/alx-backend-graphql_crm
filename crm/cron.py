@@ -1,8 +1,9 @@
 # crm/cron.py
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
-from datetime import datetime
+from datetime import datetime 
 import os
+
 
 # Change this if your GraphQL URL differs
 GRAPHQL_URL = os.environ.get("GRAPHQL_URL", "http://localhost:8000/graphql/")
@@ -64,3 +65,19 @@ def update_low_stock():
             _append_log(f"{ts} — {p['name']}: stock={p['stock']}")
     except Exception as e:
         _append_log(f"{ts} — mutation failed: {e}")
+
+def log_crm_heartbeat():
+    """
+    Logs a simple heartbeat with timestamp to /tmp/crm_heartbeat_log.txt.
+    This is used to verify the cron system is alive.
+    """
+    hb_file = "/tmp/crm_heartbeat_log.txt"
+    ts = datetime.now().strftime("%d/%m/%Y-%H:%M")
+    try:
+        with open(hb_file, "a", encoding="utf-8") as f:
+            f.write(f"{ts} — CRM heartbeat OK\n")
+    except Exception as e:
+        # Fallback logging if something goes wrong
+        with open(hb_file, "a", encoding="utf-8") as f:
+            f.write(f"{ts} — heartbeat failed: {e}\n")
+
