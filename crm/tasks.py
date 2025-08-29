@@ -4,6 +4,7 @@ from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
 import os
+import requests
 
 GRAPHQL_URL = os.environ.get("GRAPHQL_URL", "http://localhost:8000/graphql/")
 LOG_FILE = os.environ.get("CRM_REPORT_LOG", "/tmp/crm_report_log.txt")
