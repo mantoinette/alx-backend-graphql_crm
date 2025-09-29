@@ -39,9 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'graphene_django',
-    'django_filter',  # Fixed: removed 's' from django_filters
+    'django_filter', 
     'crm',
-    'django_crontab',  # Fixed: added missing comma
+    'django_crontab',  
     'django_celery_beat',
 ]
 
