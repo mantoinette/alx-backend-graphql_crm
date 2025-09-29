@@ -39,9 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'graphene_django',
-    'django_filters',
+    'django_filter',  # Fixed: removed 's' from django_filters
     'crm',
-    'django_crontab'
+    'django_crontab',  # Fixed: added missing comma
     'django_celery_beat',
 ]
 
@@ -64,6 +64,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',  # Added missing debug context processor
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -127,6 +128,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# GraphQL Configuration
 GRAPHENE = {
     'SCHEMA': 'alx_backend_graphql_crm.schema.schema'
 }
