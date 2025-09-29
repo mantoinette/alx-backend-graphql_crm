@@ -82,6 +82,26 @@ class Query(graphene.ObjectType):
     def resolve_hello(self, info):
         return "Hello, GraphQL!"
     
+    # Resolvers for single object queries
+    def resolve_customer(self, info, id):
+        try:
+            return Customer.objects.get(pk=id)
+        except Customer.DoesNotExist:
+            return None
+    
+    def resolve_product(self, info, id):
+        try:
+            return Product.objects.get(pk=id)
+        except Product.DoesNotExist:
+            return None
+    
+    def resolve_order(self, info, id):
+        try:
+            return Order.objects.get(pk=id)
+        except Order.DoesNotExist:
+            return None
+    
+    # Resolvers for list queries
     def resolve_all_customers(self, info):
         return Customer.objects.all()
     
