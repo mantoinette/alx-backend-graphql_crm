@@ -1,13 +1,12 @@
-# Put this in: alx-backend-graphql_crm/schema.py (or alx_backend_graphql_crm/schema.py)
+# alx-backend-graphql_crm/schema.py
+# REPLACE your current schema.py with this
 
 import graphene
+from crm.schema import Query as CRMQuery
 
 
-class Query(graphene.ObjectType):
-    hello = graphene.String(default_value="Hello, GraphQL!")
-    
-    def resolve_hello(self, info):
-        return "Hello, GraphQL!"
+class Query(CRMQuery, graphene.ObjectType):
+    pass
 
 
 schema = graphene.Schema(query=Query)
